@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Misty Boroi Production Monitoring System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2B3319;
+    --leaf:#3F4D26;
+    --leaf-soft:#5C6E3A;
+    --boroi:#A8BE45;
+    --boroi-deep:#8AA02F;
+    --cream:#F7F2E1;
+    --paper:#FDFBF4;
+    --soil:#7A5233;
+    --ripe:#B8502E;
+    --line:#DED5B8;
+    --shadow: 0 1px 0 rgba(43,51,25,0.06);
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:var(--cream);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(63,77,38,0.08) 1px, transparent 0);
+    background-size: 22px 22px;
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wrap{
+    max-width:1040px;
+    margin:0 auto;
+    padding:48px 24px 80px;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:24px;
+    flex-wrap:wrap;
+    border-bottom:2px solid var(--leaf);
+    padding-bottom:22px;
+    margin-bottom:24px;
+  }
+
+  .brand{ display:flex; align-items:center; gap:14px; }
+  .brand-mark{ width:44px; height:44px; flex-shrink:0; }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(24px, 3.6vw, 34px);
+    line-height:1.08;
+    margin:0;
+    color:var(--leaf);
+    letter-spacing:-0.01em;
+  }
+
+  .tagline{ margin:4px 0 0; font-size:14px; color:var(--soil); }
+
+  .month-field{ display:flex; flex-direction:column; gap:4px; align-items:flex-end; }
+  .month-field label{ font-size:12px; color:var(--leaf-soft); }
+  .month-field input{
+    font-family:'Fraunces', serif;
+    font-size:18px;
+    font-weight:600;
+    color:var(--leaf);
+    background:transparent;
+    border:none;
+    border-bottom:1.5px solid var(--boroi-deep);
+    padding:2px 2px 4px;
+    text-align:right;
+    width:220px;
+  }
+  .month-field input:focus{outline:none; border-bottom-color:var(--ripe);}
+
+  /* ---------- Connection status ---------- */
+  .status-bar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    color:var(--leaf-soft);
+    margin-bottom:24px;
+  }
+  .status-dot{
+    width:8px; height:8px; border-radius:50%;
+    background:#B8502E;
+    transition:background 0.2s ease;
+  }
+  .status-dot.live{ background:#6B8E23; }
+
+  /* ---------- Stat cards ---------- */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:16px;
+    margin-bottom:40px;
+  }
+
+  .stat{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px 22px;
+    box-shadow:var(--shadow);
+  }
+  .stat .label{ font-size:13px; color:var(--soil); margin:0 0 8px; }
+  .stat .value{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(24px, 3.4vw, 32px);
+    color:var(--leaf);
+    margin:0;
+  }
+  .stat.production .value{ color:var(--ripe); }
+  .stat .sub{ font-size:12px; color:var(--leaf-soft); margin:6px 0 0; }
+
+  /* ---------- Entries ---------- */
+  .entries-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .entries-head h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:20px;
+    color:var(--leaf);
+    margin:0;
+  }
+  .entries-head p{ font-size:13px; color:var(--soil); margin:0; }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(170px, 1fr));
+    gap:10px;
+  }
+
+  .day-card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px 12px 10px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .day-card.has-value{
+    border-color:var(--boroi-deep);
+    background:linear-gradient(180deg, rgba(168,190,69,0.10), var(--paper) 40%);
+  }
+
+  .day-card .day-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+  }
+  .day-card .day-num{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:18px;
+    color:var(--leaf);
+  }
+  .day-card .day-total{ font-size:11px; font-weight:600; color:var(--soil); }
+
+  .shift-row{ display:flex; align-items:center; gap:6px; }
+  .shift-row .shift-tag{
+    font-size:11px;
+    font-weight:600;
+    color:var(--leaf-soft);
+    width:32px;
+    flex-shrink:0;
+  }
+  .shift-row input{
+    width:100%;
+    min-width:0;
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink);
+    background:var(--cream);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:6px 8px;
+  }
+  .shift-row input:focus{ outline:none; border-color:var(--ripe); }
+  .shift-row input::-webkit-outer-spin-button,
+  .shift-row input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+
+  .day-card .day-sub{ font-size:11px; color:var(--soil); min-height:14px; }
+
+  /* ---------- Footer ---------- */
+  footer{
+    margin-top:36px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+    border-top:1px solid var(--line);
+    padding-top:18px;
+  }
+  .save-note{ font-size:12px; color:var(--leaf-soft); }
+  button.reset{
+    background:transparent;
+    border:1px solid var(--soil);
+    color:var(--soil);
+    border-radius:8px;
+    padding:9px 16px;
+    font-size:13px;
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    cursor:pointer;
+    transition:background 0.15s ease, color 0.15s ease;
+  }
+  button.reset:hover{ background:var(--soil); color:var(--paper); }
+
+  @media (max-width:640px){
+    .stats{grid-template-columns:1fr;}
+    header{flex-direction:column; align-items:flex-start;}
+    .month-field{align-items:flex-start;}
+    .month-field input{text-align:left; width:100%;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="22" cy="24" r="14" fill="#A8BE45"/>
+        <circle cx="22" cy="24" r="14" fill="url(#g)" fill-opacity="0.35"/>
+        <path d="M22 10C22 10 25 6 22 3C19 6 22 10 22 10Z" fill="#5C6E3A"/>
+        <path d="M20 6C20 6 12 6 10 12C16 13 20 6 20 6Z" fill="#5C6E3A"/>
+        <defs>
+          <linearGradient id="g" x1="10" y1="10" x2="34" y2="38" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#3F4D26"/>
+            <stop offset="1" stop-color="#A8BE45" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div>
+        <h1>Misty Boroi Production Monitoring System</h1>
+        <p class="tagline">Daily carton entries and monthly production totals</p>
+      </div>
+    </div>
+    <div class="month-field">
+      <label for="monthLabel">Log for</label>
+      <input id="monthLabel" type="text" placeholder="e.g. September 2026" maxlength="40">
+    </div>
+  </header>
+
+  <div class="status-bar">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">Connecting to shared database...</span>
+  </div>
+
+  <section class="stats">
+    <div class="stat target">
+      <p class="label">Monthly Target</p>
+      <p class="value" id="monthlyTarget">106,840</p>
+      <p class="sub">Cartons</p>
+    </div>
+    <div class="stat production">
+      <p class="label">Total Cartons (This Log)</p>
+      <p class="value" id="totalCartons">0</p>
+      <p class="sub">A12 + B12, all days combined</p>
+    </div>
+  </section>
+
+  <section class="entries">
+    <div class="entries-head">
+      <h2>Daily Carton Entries</h2>
+      <p>Anyone with this page can add or update A12 / B12 shift counts &mdash; changes appear live for everyone</p>
+    </div>
+    <div class="grid" id="dayGrid"></div>
+  </section>
+
+  <footer>
+    <p class="save-note" id="saveNote">Entries sync live to a shared database for all visitors</p>
+    <button class="reset" id="resetBtn">Reset all entries</button>
+  </footer>
+
+</div>
+
+<!-- ============================================================
+     FIREBASE SETUP REQUIRED
+     1. Go to https://console.firebase.google.com, create a free project.
+     2. In the project, add a Web App and copy its firebaseConfig object.
+     3. Enable "Realtime Database" (Build > Realtime Database > Create Database).
+     4. Set its Rules to allow public read/write (since this dashboard is
+        meant for public entry with no login):
+           {
+             "rules": {
+               ".read": true,
+               ".write": true
+             }
+           }
+     5. Paste your config into the firebaseConfig object below, replacing
+        the placeholder values, then upload this file to GitHub.
+     ============================================================ -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCGBsUlrud341uMISxxPCseWb-hSBF0JTQ",
+    authDomain: "production-line-planner.firebaseapp.com",
+    databaseURL: "https://production-line-planner-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "production-line-planner",
+    storageBucket: "production-line-planner.firebasestorage.app",
+    messagingSenderId: "230348352832",
+    appId: "1:230348352832:web:a4ab60e9fe9effd95d1ea5",
+    measurementId: "G-70M67F125Y"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const rootRef = db.ref('mistyBoroi');
+
+  const MONTHLY_TARGET = 106840;
+  const DAYS_IN_MONTH = 31;
+
+  const grid = document.getElementById('dayGrid');
+  const totalCartonsEl = document.getElementById('totalCartons');
+  const monthLabelInput = document.getElementById('monthLabel');
+  const resetBtn = document.getElementById('resetBtn');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+
+  let writeTimers = {};
+  let monthWriteTimer = null;
+  let suppressMonthEcho = false;
+
+  function buildGridShell(){
+    grid.innerHTML = '';
+    for(let day = 1; day <= DAYS_IN_MONTH; day++){
+      const card = document.createElement('div');
+      card.className = 'day-card';
+      card.dataset.day = day;
+
+      const head = document.createElement('div');
+      head.className = 'day-head';
+      const dayNum = document.createElement('div');
+      dayNum.className = 'day-num';
+      dayNum.textContent = day;
+      const dayTotal = document.createElement('div');
+      dayTotal.className = 'day-total';
+      dayTotal.id = 'dayTotal-' + day;
+      dayTotal.textContent = '';
+      head.appendChild(dayNum);
+      head.appendChild(dayTotal);
+
+      const rowA = makeShiftRow(day, 'a12', 'A12');
+      const rowB = makeShiftRow(day, 'b12', 'B12');
+
+      const sub = document.createElement('div');
+      sub.className = 'day-sub';
+      sub.id = 'daySub-' + day;
+
+      card.appendChild(head);
+      card.appendChild(rowA);
+      card.appendChild(rowB);
+      card.appendChild(sub);
+      grid.appendChild(card);
+    }
+  }
+
+  function makeShiftRow(day, key, label){
+    const row = document.createElement('div');
+    row.className = 'shift-row';
+
+    const tag = document.createElement('span');
+    tag.className = 'shift-tag';
+    tag.textContent = label;
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = '0';
+    input.step = '1';
+    input.placeholder = '0';
+    input.inputMode = 'numeric';
+    input.id = 'input-' + day + '-' + key;
+    input.setAttribute('aria-label', label + ' Shift carton count for day ' + day);
+
+    input.addEventListener('input', () => {
+      const val = parseInt(input.value, 10);
+      const clean = (!isNaN(val) && val >= 0) ? val : null;
+
+      clearTimeout(writeTimers[day + key]);
+      writeTimers[day + key] = setTimeout(() => {
+        const path = 'days/' + day + '/' + key;
+        if(clean === null || clean === 0){
+          rootRef.child(path).remove();
+        } else {
+          rootRef.child(path).set(clean);
+        }
+      }, 350);
+    });
+
+    row.appendChild(tag);
+    row.appendChild(input);
+    return row;
+  }
+
+  buildGridShell();
+
+  // ---------- Live sync from Firebase ----------
+  rootRef.on('value', (snapshot) => {
+    statusDot.classList.add('live');
+    statusText.textContent = 'Live \u2014 synced to shared database';
+
+    const data = snapshot.val() || {};
+    const days = data.days || {};
+
+    // Update month label (don't overwrite while the user is actively typing it)
+    if(document.activeElement !== monthLabelInput){
+      suppressMonthEcho = true;
+      monthLabelInput.value = data.monthLabel || '';
+      suppressMonthEcho = false;
+    }
+
+    let totalCartons = 0;
+
+    for(let day = 1; day <= DAYS_IN_MONTH; day++){
+      const entry = days[day] || {};
+      const a12 = Number(entry.a12) || 0;
+      const b12 = Number(entry.b12) || 0;
+      const dayTotal = a12 + b12;
+      totalCartons += dayTotal;
+
+      const card = grid.querySelector('.day-card[data-day="' + day + '"]');
+      const inputA = document.getElementById('input-' + day + '-a12');
+      const inputB = document.getElementById('input-' + day + '-b12');
+      const dayTotalEl = document.getElementById('dayTotal-' + day);
+      const daySubEl = document.getElementById('daySub-' + day);
+
+      if(document.activeElement !== inputA){
+        inputA.value = a12 > 0 ? a12 : '';
+      }
+      if(document.activeElement !== inputB){
+        inputB.value = b12 > 0 ? b12 : '';
+      }
+
+      if(dayTotal > 0){
+        card.classList.add('has-value');
+        dayTotalEl.textContent = dayTotal + ' cartons';
+        daySubEl.textContent = '';
+      } else {
+        card.classList.remove('has-value');
+        dayTotalEl.textContent = '';
+        daySubEl.textContent = '';
+      }
+    }
+
+    totalCartonsEl.textContent = totalCartons.toLocaleString('en-IN');
+  }, (error) => {
+    statusDot.classList.remove('live');
+    statusText.textContent = 'Could not connect \u2014 check the Firebase config in index.html';
+    console.error(error);
+  });
+
+  monthLabelInput.addEventListener('input', () => {
+    if(suppressMonthEcho) return;
+    clearTimeout(monthWriteTimer);
+    monthWriteTimer = setTimeout(() => {
+      rootRef.child('monthLabel').set(monthLabelInput.value);
+    }, 350);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    const entered = prompt('This will erase every day\'s A12/B12 counts for everyone.\nType the reset code to confirm:');
+    if(entered === null) return;
+    if(entered.trim() !== '1404RESET'){
+      alert('Incorrect code. Nothing was deleted.');
+      return;
+    }
+    rootRef.child('days').remove();
+  });
+</script>
+</body>
+</html>
